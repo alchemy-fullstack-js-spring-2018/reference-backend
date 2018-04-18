@@ -10,4 +10,9 @@ const request = chai.request(server).keepOpen();
 
 after(() => server.close());
 
+request.checkOk = res => {
+    if(!res.ok) throw res.error;
+    return res;
+};
+
 module.exports = request;

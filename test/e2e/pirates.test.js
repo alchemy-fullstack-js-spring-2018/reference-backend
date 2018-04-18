@@ -2,6 +2,7 @@ const { assert } = require('chai');
 const request = require('./request');
 const Pirate = require('../../lib/models/Pirate');
 const { dropCollection } = require('./db');
+const { checkOk } = request;
 
 describe('Pirate API', () => {
 
@@ -14,7 +15,7 @@ describe('Pirate API', () => {
         wardrobe: {
             shoes: 'flip-flops'
         },
-        weapons: ['hands', 'feet', 'head']
+        weapons: []
     };
 
     let zoro = {
@@ -24,7 +25,7 @@ describe('Pirate API', () => {
         wardrobe: {
             shoes: 'boots'
         },
-        weapons: ['sword', 'sword', 'sword']
+        weapons: []
     };
 
     // remember we started with this!
@@ -51,6 +52,7 @@ describe('Pirate API', () => {
     it('saves and gets a pirate', () => {
         return request.post('/pirates')
             .send(luffy)
+            .then(checkOk)
             .then(({ body }) => {
                 const { _id, __v, joined } = body;
                 assert.ok(_id);
@@ -72,6 +74,7 @@ describe('Pirate API', () => {
                 zoro = saved;
                 return request.get(`/pirates/${zoro._id}`);
             })
+            .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, zoro);
             });
@@ -82,6 +85,7 @@ describe('Pirate API', () => {
 
         return request.put(`/pirates/${zoro._id}`)
             .send(zoro)
+            .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, zoro);
                 return Pirate.findById(zoro._id).then(roundTrip);
@@ -95,6 +99,7 @@ describe('Pirate API', () => {
 
     it('gets all pirates but only _id, name, role and crew', () => {
         return request.get('/pirates')
+            .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, [luffy, zoro].map(getFields));
             });
@@ -102,6 +107,7 @@ describe('Pirate API', () => {
 
     it('queries pirates', () => {
         return request.get('/pirates?role=captain')
+            .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, [luffy].map(getFields));
             });
@@ -109,6 +115,7 @@ describe('Pirate API', () => {
 
     it('deletes a pirate', () => {
         return request.delete(`/pirates/${zoro._id}`)
+            .then(checkOk)
             .then(() => {
                 return Pirate.findById(zoro._id);
             })
@@ -123,5 +130,48 @@ describe('Pirate API', () => {
                 assert.equal(response.status, 404);
                 assert.match(response.body.error, /^Pirate id/);
             });
+    });
+
+    describe('Pirate Weapons API', () => {
+
+        let kick = { type: 'kick', damage: 14 };
+
+        it('adds a weapon', () => {
+
+            return request.post(`/pirates/${luffy._id}/weapons`)
+                .send(kick)
+                .then(checkOk)
+                .then(({ body }) => {
+                    assert.ok(body._id);
+                    assert.deepEqual(body, { _id: body._id, ...kick });
+                    kick = body;
+                });
+        });
+
+        it('updates a weapon', () => {
+            kick.damage = 18;
+
+            return request.put(`/pirates/${luffy._id}/weapons/${kick._id}`)
+                .send(kick)
+                .then(checkOk)
+                .then(() => {
+                    return Pirate.findById(luffy._id).select('weapons');
+                })
+                .then(pirate => {
+                    assert.equal(pirate.weapons[0].damage, kick.damage);
+                });
+        });
+
+        it('removes a weapon', () => {
+            
+            return request.delete(`/pirates/${luffy._id}/weapons/${kick._id}`)
+                .then(checkOk)
+                .then(() => {
+                    return Pirate.findById(luffy._id).select('weapons');
+                })
+                .then(pirate => {
+                    assert.equal(pirate.weapons.length, 0);
+                });
+        });
     });
 });

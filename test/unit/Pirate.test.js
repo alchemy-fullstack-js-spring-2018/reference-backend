@@ -16,15 +16,17 @@ describe('Pirate model', () => {
                 shoes: 'flip flops'
             },
             bounty: 300000000,
-            weapons: ['fists', 'feet', 'head']
+            weapons: [{
+                type: 'punch',
+                damage: 14
+            }]
         };
 
         const pirate = new Pirate(data);
 
-        assert.deepEqual(pirate.toJSON(), { 
-            _id: pirate._id, 
-            ...data
-        });
+        data._id = pirate._id;
+        data.weapons[0]._id = pirate.weapons[0]._id;
+        assert.deepEqual(pirate.toJSON(), data);
 
         assert.isUndefined(pirate.validateSync());
     });
@@ -59,5 +61,25 @@ describe('Pirate model', () => {
         const errors = getValidationErrors(pirate.validateSync());
         assert.equal(errors['role'].kind, 'enum');
         assert.equal(errors['bounty'].kind, 'min');
+    });
+
+    it('weapon damage at least 1', () => {
+        const pirate = new Pirate({
+            weapons: [
+                { type: 'too small', damage: 0 },
+            ]
+        });
+        const errors = getValidationErrors(pirate.validateSync());
+        assert.equal(errors['weapons.0.damage'].kind, 'min');
+    });
+
+    it('weapon damage not more than 30', () => {
+        const pirate = new Pirate({
+            weapons: [
+                { type: 'too big', damage: 31 },
+            ]
+        });
+        const errors = getValidationErrors(pirate.validateSync());
+        assert.equal(errors['weapons.0.damage'].kind, 'max');
     });
 });
