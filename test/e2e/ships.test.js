@@ -24,7 +24,7 @@ describe('Ships API', () => {
     };
 
     it('saves a ship', () => {
-        return request.post('/ships')
+        return request.post('/api/ships')
             .send(sunny)
             .then(checkOk)
             .then(({ body }) => {
@@ -40,12 +40,12 @@ describe('Ships API', () => {
     });
 
     it('gets a ship by id', () => {
-        return request.post('/ships')
+        return request.post('/api/ships')
             .send(navy)
             .then(checkOk)
             .then(({ body }) => {
                 navy = body;
-                return request.get(`/ships/${navy._id}`);
+                return request.get(`/api/ships/${navy._id}`);
             })
             .then(({ body }) => {
                 assert.deepEqual(body, navy);
@@ -55,12 +55,12 @@ describe('Ships API', () => {
     it('update a ship', () => {
         sunny.sails = 6;
 
-        return request.put(`/ships/${sunny._id}`)
+        return request.put(`/api/ships/${sunny._id}`)
             .send(sunny)
             .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, sunny);
-                return request.get(`/ships/${sunny._id}`);
+                return request.get(`/api/ships/${sunny._id}`);
             })
             .then(({ body }) => {
                 assert.deepEqual(body, sunny);
@@ -70,7 +70,7 @@ describe('Ships API', () => {
     const getFields = ({ _id, name }) => ({ _id, name });
 
     it('gets all ships but only _id and name', () => {
-        return request.get('/ships')
+        return request.get('/api/ships')
             .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, [sunny, navy].map(getFields));
@@ -78,9 +78,9 @@ describe('Ships API', () => {
     });
 
     it('deletes a ship', () => {
-        return request.delete(`/ships/${navy._id}`)
+        return request.delete(`/api/ships/${navy._id}`)
             .then(() => {
-                return request.get(`/ships/${navy._id}`);
+                return request.get(`/api/ships/${navy._id}`);
             })
             .then(res => {
                 assert.equal(res.status, 404);
@@ -88,7 +88,7 @@ describe('Ships API', () => {
     });
 
     it('returns 404 on get of non-existent id', () => {
-        return request.get(`/ships/${navy._id}`)
+        return request.get(`/api/ships/${navy._id}`)
             .then(response => {
                 assert.equal(response.status, 404);
                 assert.match(response.body.error, new RegExp(navy._id));

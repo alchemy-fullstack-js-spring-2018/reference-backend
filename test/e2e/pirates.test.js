@@ -12,7 +12,7 @@ describe('Pirate API', () => {
     };
 
     before(() => {
-        return request.post('/crews')
+        return request.post('/api/crews')
             .send(strawHats)
             .then(({ body }) => {
                 strawHats = body;
@@ -46,7 +46,7 @@ describe('Pirate API', () => {
 
     it('saves a pirate', () => {
         luffy.crew = strawHats._id;
-        return request.post('/pirates')
+        return request.post('/api/pirates')
             .send(luffy)
             .then(checkOk)
             .then(({ body }) => {
@@ -65,12 +65,12 @@ describe('Pirate API', () => {
     it('gets a pirate by id', () => {
         zoro.crew = strawHats._id;
 
-        return request.post('/pirates')
+        return request.post('/api/pirates')
             .send(zoro)
             .then(checkOk)
             .then(({ body }) => {
                 zoro = body;
-                return request.get(`/pirates/${zoro._id}`);
+                return request.get(`/api/pirates/${zoro._id}`);
             })
             .then(({ body }) => {
                 assert.deepEqual(body, {
@@ -85,12 +85,12 @@ describe('Pirate API', () => {
     it('update a pirate', () => {
         zoro.role = 'first sword';
 
-        return request.put(`/pirates/${zoro._id}`)
+        return request.put(`/api/pirates/${zoro._id}`)
             .send(zoro)
             .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, zoro);
-                return request.get(`/pirates/${zoro._id}`);
+                return request.get(`/api/pirates/${zoro._id}`);
             })
             .then(({ body }) => {
                 assert.equal(body.role, zoro.role);
@@ -107,7 +107,7 @@ describe('Pirate API', () => {
     };
 
     it('gets all pirates', () => {
-        return request.get('/pirates')
+        return request.get('/api/pirates')
             .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, [luffy, zoro].map(getFields));
@@ -115,7 +115,7 @@ describe('Pirate API', () => {
     });
 
     it('queries pirates', () => {
-        return request.get('/pirates?role=captain')
+        return request.get('/api/pirates?role=captain')
             .then(checkOk)
             .then(({ body }) => {
                 assert.deepEqual(body, [luffy].map(getFields));
@@ -123,9 +123,9 @@ describe('Pirate API', () => {
     });
 
     it('deletes a pirate', () => {
-        return request.delete(`/pirates/${zoro._id}`)
+        return request.delete(`/api/pirates/${zoro._id}`)
             .then(() => {
-                return request.get(`/pirates/${zoro._id}`);
+                return request.get(`/api/pirates/${zoro._id}`);
             })
             .then(res => {
                 assert.equal(res.status, 404);
@@ -133,7 +133,7 @@ describe('Pirate API', () => {
     });
 
     it('returns 404 on get of non-existent id', () => {
-        return request.get(`/pirates/${zoro._id}`)
+        return request.get(`/api/pirates/${zoro._id}`)
             .then(response => {
                 assert.equal(response.status, 404);
                 assert.match(response.body.error, new RegExp(zoro._id));
@@ -145,7 +145,7 @@ describe('Pirate API', () => {
         const weapon = { type: 'kick', damage: 13 };
 
         it('Adds a weapon', () => {
-            return request.post(`/pirates/${luffy._id}/weapons`)
+            return request.post(`/api/pirates/${luffy._id}/weapons`)
                 .send(weapon)
                 .then(checkOk)
                 .then(({ body }) => {
@@ -153,7 +153,7 @@ describe('Pirate API', () => {
                     weapon._id = body._id;
                     assert.deepEqual(body, weapon);
 
-                    return request.get(`/pirates/${luffy._id}`);
+                    return request.get(`/api/pirates/${luffy._id}`);
                 })
                 .then(({ body }) => {
                     assert.deepEqual(body.weapons, [weapon]);
@@ -162,7 +162,7 @@ describe('Pirate API', () => {
 
         it('Updates a weapon', () => {
             weapon.damage = 16;
-            return request.put(`/pirates/${luffy._id}/weapons/${weapon._id}`)
+            return request.put(`/api/pirates/${luffy._id}/weapons/${weapon._id}`)
                 .send(weapon)
                 .then(checkOk)
                 .then(({ body }) => {
@@ -171,10 +171,10 @@ describe('Pirate API', () => {
         });
 
         it('Removes a weapon', () => {
-            return request.delete(`/pirates/${luffy._id}/weapons/${weapon._id}`)
+            return request.delete(`/api/pirates/${luffy._id}/weapons/${weapon._id}`)
                 .then(checkOk)
                 .then(() => {
-                    return request.get(`/pirates/${luffy._id}`);                    
+                    return request.get(`/api/pirates/${luffy._id}`);                    
                 })
                 .then(({ body }) => {
                     assert.deepEqual(body.weapons, []);
