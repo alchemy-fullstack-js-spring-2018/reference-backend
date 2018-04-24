@@ -15,10 +15,10 @@ module.exports = {
             });
     },
 
-    createUser(data = { email: 'me@me.com', password: 'abc' }) {
+    createToken(data = { email: 'me@me.com', password: 'abc' }) {
         return request
             .post('/api/auth/signup')
             .send(data)
-            .then(res => res.body);
+            .then(res => res.body.token);
     }
 };

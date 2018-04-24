@@ -22,6 +22,15 @@ describe('Auth API', () => {
         assert.ok(token);
     });
 
+    it('verifies', () => {
+        return request
+            .get('/api/auth/verify')
+            .set('Authorization', token)
+            .then(({ body }) => {
+                assert.isOk(body.verified);
+            });
+    });
+
     it('signin', () => {
         return request
             .post('/api/auth/signin')

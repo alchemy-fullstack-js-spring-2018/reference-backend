@@ -1,11 +1,15 @@
 const { assert } = require('chai');
 const request = require('./request');
-const { dropCollection } = require('./db');
+const { dropCollection, createToken } = require('./db');
 
 describe('Pirate API', () => {
 
     before(() => dropCollection('pirates'));
     before(() => dropCollection('crews'));
+    before(() => dropCollection('users'));
+
+    let token = '';
+    before(() => createToken().then(t => token = t));
 
     let strawHats = {
         name: 'Straw Hats'
@@ -13,6 +17,7 @@ describe('Pirate API', () => {
 
     before(() => {
         return request.post('/api/crews')
+            .set('Authorization', token)
             .send(strawHats)
             .then(({ body }) => {
                 strawHats = body;
