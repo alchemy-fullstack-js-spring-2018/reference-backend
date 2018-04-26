@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Reference Backend Server ===",
   "main": "index.js",
+  "engines": {
+    "node": "8.x"
+  },
   "scripts": {
     "lint": "eslint lib test",
     "pretest": "npm run lint",
